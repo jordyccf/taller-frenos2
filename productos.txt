@@ -1,0 +1,12 @@
+P001,Zapatas de Freno,TOYOTA,Zapatas,80,10,zapata_toyota
+P002,Pastillas Cerámicas,TOYOTA,Pastillas,120,15,pastilla_toyota
+P003,Bomba de Freno,TOYOTA,Bombas,200,8,bomba_toyota
+P004,Master de Freno,TOYOTA,Master,450,5,master_toyota
+P005,Manguera de Freno,TOYOTA,Mangueras,50,20,manguera
+P006,Zapatas de Freno,HYUNDAI,Zapatas,85,12,zapata_hyundai
+P007,Pastillas Cerámicas,HYUNDAI,Pastillas,125,10,pastilla_hyundai
+P008,Bomba de Freno,HYUNDAI,Bombas,210,7,bomba_hyundai
+P009,Master de Freno,HYUNDAI,Master,460,4,master_hyundai
+P010,Jebe de Caliper,TOYOTA,Jebes,35,25,jebe
+P011,KIT de Empaques,NISSAN,Kit,45,15,kit
+P012,Líquido de Frenos,UNIVERSAL,Liquido,25,30,liquido
