@@ -15,17 +15,28 @@ def obtener_imagen_existente(nombre_base):
             return f'{nombre_base}{ext}'
     return None
 
-# ==================== ARCHIVOS TXT ====================
+# ==================== ARCHIVOS TXT CON UTF-8 ====================
 def cargar_usuarios():
     if not os.path.exists("usuarios.txt"):
-        with open("usuarios.txt", "w") as f:
+        with open("usuarios.txt", "w", encoding='utf-8') as f:
             f.write("admin,admin123\ncliente,cliente456\n")
     usuarios = {}
-    with open("usuarios.txt", "r") as f:
-        for linea in f:
-            if linea.strip():
-                user, pwd = linea.strip().split(",")
-                usuarios[user] = pwd
+    try:
+        with open("usuarios.txt", "r", encoding='utf-8', errors='ignore') as f:
+            for linea in f:
+                if linea.strip():
+                    # Soporta tanto coma como dos puntos
+                    linea = linea.strip()
+                    if ',' in linea:
+                        user, pwd = linea.split(",", 1)
+                    elif ':' in linea:
+                        user, pwd = linea.split(":", 1)
+                    else:
+                        continue
+                    usuarios[user] = pwd
+    except Exception as e:
+        print(f"Error cargando usuarios: {e}")
+        usuarios = {"admin": "admin123", "cliente": "cliente456"}
     return usuarios
 
 def cargar_productos():
@@ -33,61 +44,77 @@ def cargar_productos():
     if not os.path.exists("productos.txt"):
         productos_iniciales = [
             "P001,Zapatas de Freno,TOYOTA,Zapatas,80,10,zapata_toyota",
-            "P002,Pastillas Cerámicas,TOYOTA,Pastillas,120,15,pastilla_toyota",
+            "P002,Pastillas Ceramicas,TOYOTA,Pastillas,120,15,pastilla_toyota",
             "P003,Bomba de Freno,TOYOTA,Bombas,200,8,bomba_toyota",
             "P004,Master de Freno,TOYOTA,Master,450,5,master_toyota",
             "P005,Manguera de Freno,TOYOTA,Mangueras,50,20,manguera",
             "P006,Zapatas de Freno,HYUNDAI,Zapatas,85,12,zapata_hyundai",
-            "P007,Pastillas Cerámicas,HYUNDAI,Pastillas,125,10,pastilla_hyundai",
+            "P007,Pastillas Ceramicas,HYUNDAI,Pastillas,125,10,pastilla_hyundai",
             "P008,Bomba de Freno,HYUNDAI,Bombas,210,7,bomba_hyundai",
             "P009,Master de Freno,HYUNDAI,Master,460,4,master_hyundai",
             "P010,Jebe de Caliper,TOYOTA,Jebes,35,25,jebe",
             "P011,KIT de Empaques,NISSAN,Kit,45,15,kit",
-            "P012,Líquido de Frenos,UNIVERSAL,Liquido,25,30,liquido"
+            "P012,Liquido de Frenos,UNIVERSAL,Liquido,25,30,liquido"
         ]
-        with open("productos.txt", "w") as f:
+        with open("productos.txt", "w", encoding='utf-8') as f:
             for p in productos_iniciales:
                 f.write(p + "\n")
     
     productos = []
-    with open("productos.txt", "r") as f:
-        for linea in f:
-            if linea.strip():
-                datos = linea.strip().split(",")
-                nombre_base = datos[6] if len(datos) > 6 else "default"
-                imagen_real = obtener_imagen_existente(nombre_base)
-                if imagen_real is None:
-                    imagen_real = f"{nombre_base}.jpg"
-                
-                productos.append({
-                    "codigo": datos[0],
-                    "nombre": datos[1],
-                    "marca": datos[2],
-                    "tipo": datos[3],
-                    "precio": float(datos[4]),
-                    "stock": int(datos[5]),
-                    "imagen": imagen_real
-                })
+    try:
+        with open("productos.txt", "r", encoding='utf-8', errors='ignore') as f:
+            for linea in f:
+                if linea.strip():
+                    datos = linea.strip().split(",")
+                    if len(datos) < 6:
+                        continue
+                    nombre_base = datos[6] if len(datos) > 6 else "default"
+                    imagen_real = obtener_imagen_existente(nombre_base)
+                    if imagen_real is None:
+                        imagen_real = f"{nombre_base}.jpg"
+                    
+                    productos.append({
+                        "codigo": datos[0],
+                        "nombre": datos[1],
+                        "marca": datos[2],
+                        "tipo": datos[3],
+                        "precio": float(datos[4]),
+                        "stock": int(datos[5]),
+                        "imagen": imagen_real
+                    })
+    except Exception as e:
+        print(f"Error cargando productos: {e}")
+        productos = []
     return productos
 
 def guardar_productos(productos):
-    with open("productos.txt", "w") as f:
-        for p in productos:
-            nombre_base = p['imagen'].split('.')[0] if '.' in p['imagen'] else p['imagen']
-            f.write(f"{p['codigo']},{p['nombre']},{p['marca']},{p['tipo']},{p['precio']},{p['stock']},{nombre_base}\n")
+    try:
+        with open("productos.txt", "w", encoding='utf-8') as f:
+            for p in productos:
+                nombre_base = p['imagen'].split('.')[0] if '.' in p['imagen'] else p['imagen']
+                f.write(f"{p['codigo']},{p['nombre']},{p['marca']},{p['tipo']},{p['precio']},{p['stock']},{nombre_base}\n")
+    except Exception as e:
+        print(f"Error guardando productos: {e}")
 
 def guardar_factura(factura):
-    with open("facturas.txt", "a") as f:
-        f.write(json.dumps(factura) + "\n")
+    try:
+        with open("facturas.txt", "a", encoding='utf-8') as f:
+            f.write(json.dumps(factura) + "\n")
+    except Exception as e:
+        print(f"Error guardando factura: {e}")
 
 def cargar_facturas():
     if not os.path.exists("facturas.txt"):
         return []
     facturas = []
-    with open("facturas.txt", "r") as f:
-        for linea in f:
-            if linea.strip():
-                facturas.append(json.loads(linea.strip()))
+    try:
+        with open("facturas.txt", "r", encoding='utf-8', errors='ignore') as f:
+            for linea in f:
+                if linea.strip():
+                    facturas.append(json.loads(linea.strip()))
+    except Exception as e:
+        print(f"Error cargando facturas: {e}")
+        facturas = []
     return facturas
 
 # Ruta para servir imágenes
@@ -95,7 +122,7 @@ def cargar_facturas():
 def servir_imagen(filename):
     return send_from_directory('static/imagenes', filename)
 
-# ==================== HTML ====================
+# ==================== HTML (igual que el tuyo, no lo cambio) ====================
 login_html = """
 <!DOCTYPE html>
 <html lang="es">
@@ -681,6 +708,7 @@ index_html = """
 </body>
 </html>
 """
+
 # ==================== RUTAS FLASK ====================
 intentos = 0
 
@@ -710,23 +738,27 @@ def index():
 
 @app.route("/facturar", methods=["POST"])
 def facturar():
-    data = request.json
-    carrito = data.get("carrito", [])
-    nombre = data.get("nombre", "")
-    ruc = data.get("ruc", "")
-    facturas = cargar_facturas()
-    num = len(facturas) + 1001
-    total = sum(i["precio"] * i["cantidad"] for i in carrito)
-    factura = {"numero": num, "fecha": str(datetime.now()), "nombre": nombre, "ruc": ruc, "productos": carrito, "total": total}
-    guardar_factura(factura)
-    
-    productos = cargar_productos()
-    for item in carrito:
-        for p in productos:
-            if p["codigo"] == item["codigo"]:
-                p["stock"] -= item["cantidad"]
-    guardar_productos(productos)
-    return jsonify({"exito": True, "numero": num, "total": total})
+    try:
+        data = request.json
+        carrito = data.get("carrito", [])
+        nombre = data.get("nombre", "")
+        ruc = data.get("ruc", "")
+        facturas = cargar_facturas()
+        num = len(facturas) + 1001
+        total = sum(i["precio"] * i["cantidad"] for i in carrito)
+        factura = {"numero": num, "fecha": str(datetime.now()), "nombre": nombre, "ruc": ruc, "productos": carrito, "total": total}
+        guardar_factura(factura)
+        
+        productos = cargar_productos()
+        for item in carrito:
+            for p in productos:
+                if p["codigo"] == item["codigo"]:
+                    p["stock"] -= item["cantidad"]
+        guardar_productos(productos)
+        return jsonify({"exito": True, "numero": num, "total": total})
+    except Exception as e:
+        print(f"Error en facturar: {e}")
+        return jsonify({"exito": False, "error": str(e)})
 
 @app.route("/logout")
 def logout():
@@ -734,4 +766,5 @@ def logout():
     return redirect(url_for("login"))
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080, debug=False)
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port, debug=False)
