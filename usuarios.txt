@@ -1,0 +1,6 @@
+admin,admin123
+cliente,cliente456
+213,1231,12313,12313
+xddd,12313,12313,12@correo.com
+jordanxd,puccabill123,jordan cupe,12@correo.com
+jordan,puccabill123,jordan fabian,jordycc2009@gmail.com

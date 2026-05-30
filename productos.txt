@@ -1,0 +1,46 @@
+P001,Zapatas de Freno,TOYOTA,Zapatas,80.0,10,zapata_toyota
+P002,Pastillas Ceramicas,TOYOTA,Pastillas,120.0,14,pastilla_toyota
+P003,Bomba de Freno,TOYOTA,Bombas,200.0,7,bomba_toyota
+P004,Master de Freno,TOYOTA,Master,450.0,5,master_toyota
+P005,Manguera de Freno,TOYOTA,Mangueras,50.0,20,manguera
+P006,Zapatas de Freno,HYUNDAI,Zapatas,85.0,12,zapata_hyundai
+P007,Pastillas Ceramicas,HYUNDAI,Pastillas,125.0,9,pastilla_hyundai
+P008,Bomba de Freno,HYUNDAI,Bombas,210.0,7,bomba_hyundai
+P009,Master de Freno,HYUNDAI,Master,460.0,4,master_hyundai
+P010,Jebe de Caliper,TOYOTA,Jebes,35.0,25,jebe
+P011,KIT de Empaques,NISSAN,Kit,45.0,15,kit
+P012,Lquido de Frenos,UNIVERSAL,Liquido,25.0,30,liquido
+R001,Manguera de Freno Genrica,UNIVERSAL,Manguera,45.0,25,manguera_generica
+R002,KIT de Empaques y Jebes,UNIVERSAL,Kit,55.0,20,kit_empaques
+R003,Piston de Caliper,UNIVERSAL,Piston,65.0,15,piston_caliper
+R004,Caliper de Freno,UNIVERSAL,Caliper,180.0,10,caliper_freno
+R005,Pasador de Munon,UNIVERSAL,Pasador,25.0,30,pasador_munon
+R006,Tapa de Depsito de Frenos,UNIVERSAL,Tapa,35.0,25,tapa_deposito
+R007,Rodaje y Balinera,UNIVERSAL,Rodaje,40.0,20,rodaje_balinera
+R008,Retn de Bomba de Freno,UNIVERSAL,Reten,15.0,40,reten_bomba
+R009,Jebe de Caliper,UNIVERSAL,Jebe,28.0,35,jebe_caliper
+R010,Resorte de Zapatas,UNIVERSAL,Resorte,18.0,45,resorte_zapatas
+R011,Sensor de Desgaste de Pastillas,UNIVERSAL,Sensor,42.0,18,sensor_desgaste
+R012,Grasa para Frenos de Alta Temperatura,UNIVERSAL,Grasa,22.0,40,grasa_frenos
+L001,Lquido de Frenos DOT3,UNIVERSAL,Liquido,25.0,50,liquido_dot4
+P027,Pastillas Deportivas MAZDA 3,MAZDA,Pastillas,135.0,12,pastilla_mazda3
+P028,Zapatas Traseras MAZDA 6,MAZDA,Zapatas,92.0,10,zapata_mazda6
+P029,Bomba de Freno MAZDA CX-5,MAZDA,Bombas,215.0,8,bomba_mazda_cx5
+P030,Master de Freno MAZDA,MAZDA,Master,470.0,5,master_mazda
+P031,Pastillas Ceramicas CHEVROLET Spark,CHEVROLET,Pastillas,110.0,15,pastilla_spark
+P032,Zapatas de Freno CHEVROLET Sail,CHEVROLET,Zapatas,85.0,12,zapata_sail
+P033,Bomba de Freno CHEVROLET Onix,CHEVROLET,Bombas,195.0,10,bomba_onix
+P034,Master de Freno CHEVROLET,CHEVROLET,Master,440.0,6,master_chevrolet
+P035,Pastillas 4x4 JEEP Wrangler,JEEP,Pastillas,165.0,9,pastilla_wrangler
+P036,Zapatas Traseras JEEP Compass,JEEP,Zapatas,105.0,8,zapata_compass
+P037,Bomba de Freno JEEP Grand Cherokee,JEEP,Bombas,250.0,6,bomba_grand_cherokee
+P038,Master de Freno JEEP,JEEP,Master,520.0,4,master_jeep
+P039,Pastillas Deportivas MITSUBISHI Lancer,MITSUBISHI,Pastillas,140.0,12,pastilla_lancer
+P040,Zapatas de Freno MITSUBISHI Montero,MITSUBISHI,Zapatas,98.0,10,zapata_montero
+P041,Bomba de Freno MITSUBISHI Outlander,MITSUBISHI,Bombas,220.0,7,bomba_outlander
+P042,Master de Freno MITSUBISHI,MITSUBISHI,Master,490.0,5,master_mitsubishi
+P010,Pastillas Deportivas NISSAN Sentra,NISSAN,Pastillas,135.0,10,pastilla_nissan
+P011,Zapatas Traseras NISSAN Tsuru,NISSAN,Zapatas,90.0,12,zapata_nissan
+P012,Bomba de Freno NISSAN Versa,NISSAN,Bombas,195.0,6,bomba_nissan
+P043,Master de Freno NISSAN Altima,NISSAN,Master,460.0,5,master_nissan
+L002,Líquido de Frenos DOT 5 Premium,UNIVERSAL,Liquido,45,40,liquido_dot5
