@@ -19,8 +19,8 @@ def obtener_imagen_existente(nombre_base):
 def cargar_usuarios():
     if not os.path.exists("usuarios.txt"):
         with open("usuarios.txt", "w", encoding='utf-8') as f:
-            f.write("admin,admin123,Administrador,admin@taller.com\n")
-            f.write("cliente,cliente456,Cliente Demo,cliente@demo.com\n")
+            f.write("admin,admin123,Administrador,admin@taller.com,admin\n")
+            f.write("cliente,cliente456,Cliente Demo,cliente@demo.com,cliente\n")
     
     usuarios = {}
     usuarios_detalle = {}
@@ -34,16 +34,20 @@ def cargar_usuarios():
                         pwd = partes[1]
                         nombre = partes[2] if len(partes) > 2 else user
                         email = partes[3] if len(partes) > 3 else ""
+                        rol = partes[4] if len(partes) > 4 else "cliente"  # Por defecto cliente
                         usuarios[user] = pwd
-                        usuarios_detalle[user] = {"nombre": nombre, "email": email}
+                        usuarios_detalle[user] = {"nombre": nombre, "email": email, "rol": rol}
     except Exception as e:
         print(f"Error cargando usuarios: {e}")
         usuarios = {"admin": "admin123", "cliente": "cliente456"}
-        usuarios_detalle = {"admin": {"nombre": "Administrador", "email": ""}, "cliente": {"nombre": "Cliente Demo", "email": ""}}
+        usuarios_detalle = {
+            "admin": {"nombre": "Administrador", "email": "", "rol": "admin"},
+            "cliente": {"nombre": "Cliente Demo", "email": "", "rol": "cliente"}
+        }
     
     return usuarios, usuarios_detalle
 
-def guardar_usuario(usuario, password, nombre, email):
+def guardar_usuario(usuario, password, nombre, email, rol="cliente"):
     if not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
         return False, "Email inválido"
     if not usuario or len(usuario) < 3:
@@ -55,7 +59,7 @@ def guardar_usuario(usuario, password, nombre, email):
     
     try:
         with open("usuarios.txt", "a", encoding='utf-8') as f:
-            f.write(f"{usuario},{password},{nombre},{email}\n")
+            f.write(f"{usuario},{password},{nombre},{email},{rol}\n")
         return True, "Registro exitoso"
     except Exception as e:
         return False, f"Error al registrar: {e}"
@@ -155,11 +159,185 @@ def cargar_pedidos():
         pedidos = []
     return pedidos
 
+def es_admin():
+    return session.get('rol') == 'admin'
+
+# ==================== RUTAS DE ADMINISTRACIÓN ====================
+@app.route('/admin/producto', methods=['POST'])
+def admin_crear_producto():
+    if not es_admin():
+        return jsonify({"exito": False, "mensaje": "No autorizado"}), 403
+    
+    data = request.json
+    codigo = data.get('codigo', '').strip()
+    nombre = data.get('nombre', '').strip()
+    marca = data.get('marca', '').strip()
+    tipo = data.get('tipo', '').strip()
+    precio = data.get('precio')
+    stock = data.get('stock')
+    nombre_base = data.get('nombre_base', '').strip()
+    
+    # Validaciones básicas
+    if not codigo or not nombre or not tipo:
+        return jsonify({"exito": False, "mensaje": "Campos obligatorios: código, nombre, tipo"})
+    try:
+        precio = float(precio)
+        stock = int(stock)
+    except:
+        return jsonify({"exito": False, "mensaje": "Precio/stock inválidos"})
+    
+    # Verificar código único
+    productos = cargar_productos()
+    if any(p['codigo'] == codigo for p in productos):
+        return jsonify({"exito": False, "mensaje": "El código ya existe"})
+    
+    # Determinar imagen
+    if not nombre_base:
+        nombre_base = codigo.lower()
+    imagen_real = obtener_imagen_existente(nombre_base)
+    if not imagen_real:
+        imagen_real = f"{nombre_base}.jpg"  # se usará el placeholder si no existe
+    
+    nuevo = {
+        "codigo": codigo,
+        "nombre": nombre,
+        "marca": marca,
+        "tipo": tipo,
+        "precio": precio,
+        "stock": stock,
+        "imagen": imagen_real,
+        "nombre_base": nombre_base
+    }
+    
+    with open("productos.txt", "a", encoding='utf-8') as f:
+        f.write(f"{codigo},{nombre},{marca},{tipo},{precio},{stock},{nombre_base}\n")
+    
+    return jsonify({"exito": True, "producto": nuevo})
+
+@app.route('/admin/producto/<codigo>', methods=['PUT'])
+def admin_editar_producto(codigo):
+    if not es_admin():
+        return jsonify({"exito": False, "mensaje": "No autorizado"}), 403
+    
+    data = request.json
+    productos = cargar_productos()
+    idx = next((i for i, p in enumerate(productos) if p['codigo'] == codigo), None)
+    if idx is None:
+        return jsonify({"exito": False, "mensaje": "Producto no encontrado"}), 404
+    
+    # Actualizar campos
+    for campo in ['nombre', 'marca', 'tipo', 'precio', 'stock', 'nombre_base']:
+        if campo in data:
+            if campo in ('precio', 'stock'):
+                try:
+                    productos[idx][campo] = float(data[campo]) if campo == 'precio' else int(data[campo])
+                except:
+                    return jsonify({"exito": False, "mensaje": f"Valor inválido para {campo}"})
+            else:
+                productos[idx][campo] = data[campo]
+    
+    # Actualizar imagen si cambió nombre_base
+    nombre_base = productos[idx]['nombre_base']
+    imagen_real = obtener_imagen_existente(nombre_base)
+    productos[idx]['imagen'] = imagen_real if imagen_real else f"{nombre_base}.jpg"
+    
+    guardar_productos(productos)
+    return jsonify({"exito": True, "producto": productos[idx]})
+
+@app.route('/admin/producto/<codigo>', methods=['DELETE'])
+def admin_eliminar_producto(codigo):
+    if not es_admin():
+        return jsonify({"exito": False, "mensaje": "No autorizado"}), 403
+    
+    productos = cargar_productos()
+    productos = [p for p in productos if p['codigo'] != codigo]
+    if len(productos) == len(cargar_productos()):
+        return jsonify({"exito": False, "mensaje": "Producto no encontrado"}), 404
+    
+    guardar_productos(productos)
+    return jsonify({"exito": True})
+
+# ==================== RUTAS PÚBLICAS ====================
 @app.route('/imagenes/<path:filename>')
 def servir_imagen(filename):
     return send_from_directory('static/imagenes', filename)
 
-# ==================== HTML COMPLETO ====================
+@app.route("/")
+def index():
+    return render_template_string(landing_html, productos=cargar_productos(), session=session)
+
+@app.route("/login_api", methods=["POST"])
+def login_api():
+    data = request.json
+    usuario = data.get("usuario")
+    password = data.get("password")
+    usuarios, usuarios_detalle = cargar_usuarios()
+    if usuario in usuarios and usuarios[usuario] == password:
+        session["usuario"] = usuario
+        session["nombre"] = usuarios_detalle.get(usuario, {}).get("nombre", usuario)
+        session["rol"] = usuarios_detalle.get(usuario, {}).get("rol", "cliente")
+        return jsonify({"exito": True, "nombre": session["nombre"], "rol": session["rol"]})
+    return jsonify({"exito": False, "mensaje": "Usuario o contraseña incorrectos"})
+
+@app.route("/registro_api", methods=["POST"])
+def registro_api():
+    data = request.json
+    usuario = data.get("usuario")
+    password = data.get("password")
+    nombre = data.get("nombre")
+    email = data.get("email")
+    
+    usuarios, _ = cargar_usuarios()
+    if usuario in usuarios:
+        return jsonify({"exito": False, "mensaje": "El usuario ya existe"})
+    
+    exito, mensaje = guardar_usuario(usuario, password, nombre, email)
+    if exito:
+        return jsonify({"exito": True})
+    return jsonify({"exito": False, "mensaje": mensaje})
+
+@app.route("/finalizar_pedido", methods=["POST"])
+def finalizar_pedido():
+    if "usuario" not in session:
+        return jsonify({"exito": False, "mensaje": "No autorizado"})
+    
+    try:
+        data = request.json
+        carrito = data.get("carrito", [])
+        pedidos = cargar_pedidos()
+        num = len(pedidos) + 1001
+        total = sum(i["precio"] * i["cantidad"] for i in carrito)
+        
+        pedido = {
+            "numero": num,
+            "fecha": str(datetime.now()),
+            "usuario": session["usuario"],
+            "productos": carrito,
+            "total": total,
+            "estado": "pendiente"
+        }
+        guardar_pedido(pedido)
+        
+        productos = cargar_productos()
+        for item in carrito:
+            for p in productos:
+                if p["codigo"] == item["codigo"]:
+                    p["stock"] -= item["cantidad"]
+        guardar_productos(productos)
+        
+        return jsonify({"exito": True, "numero": num, "total": total})
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"exito": False, "error": str(e)})
+
+@app.route("/logout")
+def logout():
+    session.pop("usuario", None)
+    session.pop("nombre", None)
+    session.pop("rol", None)
+    return redirect(url_for("index"))
+
+# ==================== HTML COMPLETO (con admin) ====================
 landing_html = """
 <!DOCTYPE html>
 <html lang="es">
@@ -515,6 +693,11 @@ landing_html = """
         .producto-card {
             animation: fadeIn 0.5s ease;
         }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
@@ -538,6 +721,11 @@ landing_html = """
                         <span class="text-warning"><i class="fas fa-user"></i> {{ session.nombre }}</span>
                         <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Salir</a>
                     </div>
+                    {% if session.get('rol') == 'admin' %}
+                    <button class="btn btn-success" onclick="abrirModalAgregar()">
+                        <i class="fas fa-plus-circle"></i> Agregar Producto
+                    </button>
+                    {% endif %}
                     {% else %}
                     <button class="btn btn-outline-light" onclick="abrirModalRegistro()">
                         <i class="fas fa-user-plus"></i> Registrarse
@@ -719,6 +907,75 @@ landing_html = """
             </button>
         </div>
     </div>
+
+    <!-- Modal Agregar/Editar Producto -->
+    <div id="modalProducto" class="modal">
+        <div class="modal-content" style="max-width:600px;">
+            <span class="close-modal" onclick="cerrarModalProducto()">&times;</span>
+            <h2 id="modalProductoTitulo">Agregar Producto</h2>
+            <form id="formProducto" onsubmit="return false;">
+                <input type="hidden" id="prodCodigoOriginal">
+                <div class="mb-3">
+                    <label class="form-label">Código</label>
+                    <input type="text" id="prodCodigo" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" id="prodNombre" class="form-control" required>
+                </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        <label class="form-label">Marca</label>
+                        <input type="text" id="prodMarca" class="form-control">
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Tipo (categoría)</label>
+                        <select id="prodTipo" class="form-control" required>
+                            <option value="Pastillas">Pastillas</option>
+                            <option value="Zapatas">Zapatas</option>
+                            <option value="Bombas">Bombas</option>
+                            <option value="Master">Master</option>
+                            <option value="Liquido">Líquido</option>
+                            <option value="Otros">Otros (genérico)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        <label class="form-label">Precio (S/)</label>
+                        <input type="number" id="prodPrecio" class="form-control" step="0.01" required>
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Stock</label>
+                        <input type="number" id="prodStock" class="form-control" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nombre base de imagen (sin extensión)</label>
+                    <input type="text" id="prodImagenBase" class="form-control" placeholder="Ej: pastilla_toyota">
+                    <small class="text-muted">La imagen debe estar en static/imagenes/ con ese nombre (jpg, png, etc.)</small>
+                </div>
+                <button type="button" class="btn btn-primary w-100" onclick="guardarProducto()">
+                    <i class="fas fa-save"></i> Guardar Producto
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Confirmar Eliminación -->
+    <div id="modalEliminar" class="modal">
+        <div class="modal-content" style="max-width:400px;">
+            <span class="close-modal" onclick="cerrarModalEliminar()">&times;</span>
+            <h4>¿Eliminar producto?</h4>
+            <p>Estás a punto de eliminar <strong id="eliminarNombre"></strong></p>
+            <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-secondary" onclick="cerrarModalEliminar()">Cancelar</button>
+                <button class="btn btn-danger" id="btnConfirmarEliminar">
+                    <i class="fas fa-trash"></i> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -727,6 +984,7 @@ landing_html = """
         let categoriaActual = 'Pastillas';
         let marcaActiva = '';
         let busquedaActiva = '';
+        let esAdmin = {{ 'true' if session.get('rol') == 'admin' else 'false' }};
         
         const categoriasConfig = {
             'Pastillas': { 
@@ -887,6 +1145,18 @@ landing_html = """
         function renderProductoCard(p) {
             const imgSrc = `/imagenes/${p.imagen}`;
             const mostrarMarca = p.marca !== 'UNIVERSAL';
+            let adminBtns = '';
+            if (esAdmin) {
+                adminBtns = `
+                    <div class="mt-2 d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary" onclick="abrirModalEditar('${p.codigo}')">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="confirmarEliminar('${p.codigo}','${p.nombre.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>`;
+            }
             
             return `
                 <div class="producto-card position-relative">
@@ -898,9 +1168,10 @@ landing_html = """
                         <div class="producto-nombre">${p.nombre}</div>
                         ${mostrarMarca ? `<div class="producto-marca"><i class="fas fa-tag"></i> ${p.marca}</div>` : '<div class="producto-marca" style="color: #999;"><i class="fas fa-cogs"></i> Genérico</div>'}
                         <div class="producto-precio">S/ ${p.precio.toFixed(2)}</div>
-                        <button class="btn-comprar mt-2" onclick="agregarAlCarrito('${p.codigo}', '${p.nombre}', ${p.precio})">
+                        <button class="btn-comprar mt-2" onclick="agregarAlCarrito('${p.codigo}', '${p.nombre.replace(/'/g, "\\'")}', ${p.precio})">
                             <i class="fas fa-cart-plus"></i> Agregar al carrito
                         </button>
+                        ${adminBtns}
                     </div>
                 </div>
             `;
@@ -1110,6 +1381,101 @@ landing_html = """
             });
         }
         
+        // Funciones para administración de productos
+        function abrirModalAgregar() {
+            document.getElementById('modalProductoTitulo').innerText = 'Agregar Producto';
+            document.getElementById('formProducto').reset();
+            document.getElementById('prodCodigoOriginal').value = '';
+            document.getElementById('prodCodigo').disabled = false;
+            document.getElementById('modalProducto').style.display = 'flex';
+        }
+
+        function abrirModalEditar(codigo) {
+            const prod = productosData.find(p => p.codigo === codigo);
+            if (!prod) return;
+            document.getElementById('modalProductoTitulo').innerText = 'Editar Producto';
+            document.getElementById('prodCodigoOriginal').value = prod.codigo;
+            document.getElementById('prodCodigo').value = prod.codigo;
+            document.getElementById('prodCodigo').disabled = true;
+            document.getElementById('prodNombre').value = prod.nombre;
+            document.getElementById('prodMarca').value = prod.marca;
+            document.getElementById('prodTipo').value = prod.tipo;
+            document.getElementById('prodPrecio').value = prod.precio;
+            document.getElementById('prodStock').value = prod.stock;
+            document.getElementById('prodImagenBase').value = prod.nombre_base;
+            document.getElementById('modalProducto').style.display = 'flex';
+        }
+
+        function cerrarModalProducto() {
+            document.getElementById('modalProducto').style.display = 'none';
+        }
+
+        function guardarProducto() {
+            const codigoOriginal = document.getElementById('prodCodigoOriginal').value;
+            const esEdicion = codigoOriginal !== '';
+            const url = esEdicion ? `/admin/producto/${codigoOriginal}` : '/admin/producto';
+            const method = esEdicion ? 'PUT' : 'POST';
+            
+            const data = {
+                codigo: document.getElementById('prodCodigo').value,
+                nombre: document.getElementById('prodNombre').value,
+                marca: document.getElementById('prodMarca').value,
+                tipo: document.getElementById('prodTipo').value,
+                precio: document.getElementById('prodPrecio').value,
+                stock: document.getElementById('prodStock').value,
+                nombre_base: document.getElementById('prodImagenBase').value
+            };
+            
+            fetch(url, {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.exito) {
+                    mostrarNotificacion(esEdicion ? '✅ Producto actualizado' : '✅ Producto creado');
+                    location.reload();
+                } else {
+                    mostrarNotificacion('❌ ' + res.mensaje, 'error');
+                }
+            });
+        }
+
+        let codigoAEliminar = '';
+
+        function confirmarEliminar(codigo, nombre) {
+            codigoAEliminar = codigo;
+            document.getElementById('eliminarNombre').innerText = nombre;
+            document.getElementById('modalEliminar').style.display = 'flex';
+        }
+
+        function cerrarModalEliminar() {
+            document.getElementById('modalEliminar').style.display = 'none';
+        }
+
+        document.getElementById('btnConfirmarEliminar').addEventListener('click', function() {
+            fetch(`/admin/producto/${codigoAEliminar}`, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(res => {
+                if (res.exito) {
+                    mostrarNotificacion('🗑️ Producto eliminado');
+                    location.reload();
+                } else {
+                    mostrarNotificacion('❌ Error al eliminar', 'error');
+                }
+            });
+            cerrarModalEliminar();
+        });
+
+        // Cerrar modales al hacer clic fuera
+        window.addEventListener('click', function(e) {
+            if (e.target === document.getElementById('modalProducto')) cerrarModalProducto();
+            if (e.target === document.getElementById('modalEliminar')) cerrarModalEliminar();
+            if (e.target === document.getElementById('modalRegistro')) cerrarModalRegistro();
+            if (e.target === document.getElementById('modalCarrito')) cerrarCarrito();
+        });
+        
         // Inicializar
         let saved = localStorage.getItem('carrito');
         if (saved) carrito = JSON.parse(saved);
@@ -1117,90 +1483,10 @@ landing_html = """
         
         document.querySelector('.sidebar-categoria[data-categoria="Pastillas"]').classList.add('active');
         cargarProductosPorCategoria();
-        
-        window.onclick = function(e) {
-            if (e.target === document.getElementById('modalRegistro')) cerrarModalRegistro();
-            if (e.target === document.getElementById('modalCarrito')) cerrarCarrito();
-        }
     </script>
 </body>
 </html>
     """
-
-# ==================== RUTAS FLASK ====================
-
-@app.route("/")
-def index():
-    return render_template_string(landing_html, productos=cargar_productos(), session=session)
-
-@app.route("/login_api", methods=["POST"])
-def login_api():
-    data = request.json
-    usuario = data.get("usuario")
-    password = data.get("password")
-    usuarios, usuarios_detalle = cargar_usuarios()
-    if usuario in usuarios and usuarios[usuario] == password:
-        session["usuario"] = usuario
-        session["nombre"] = usuarios_detalle.get(usuario, {}).get("nombre", usuario)
-        return jsonify({"exito": True, "nombre": session["nombre"]})
-    return jsonify({"exito": False, "mensaje": "Usuario o contraseña incorrectos"})
-
-@app.route("/registro_api", methods=["POST"])
-def registro_api():
-    data = request.json
-    usuario = data.get("usuario")
-    password = data.get("password")
-    nombre = data.get("nombre")
-    email = data.get("email")
-    
-    usuarios, _ = cargar_usuarios()
-    if usuario in usuarios:
-        return jsonify({"exito": False, "mensaje": "El usuario ya existe"})
-    
-    exito, mensaje = guardar_usuario(usuario, password, nombre, email)
-    if exito:
-        return jsonify({"exito": True})
-    return jsonify({"exito": False, "mensaje": mensaje})
-
-@app.route("/finalizar_pedido", methods=["POST"])
-def finalizar_pedido():
-    if "usuario" not in session:
-        return jsonify({"exito": False, "mensaje": "No autorizado"})
-    
-    try:
-        data = request.json
-        carrito = data.get("carrito", [])
-        pedidos = cargar_pedidos()
-        num = len(pedidos) + 1001
-        total = sum(i["precio"] * i["cantidad"] for i in carrito)
-        
-        pedido = {
-            "numero": num,
-            "fecha": str(datetime.now()),
-            "usuario": session["usuario"],
-            "productos": carrito,
-            "total": total,
-            "estado": "pendiente"
-        }
-        guardar_pedido(pedido)
-        
-        productos = cargar_productos()
-        for item in carrito:
-            for p in productos:
-                if p["codigo"] == item["codigo"]:
-                    p["stock"] -= item["cantidad"]
-        guardar_productos(productos)
-        
-        return jsonify({"exito": True, "numero": num, "total": total})
-    except Exception as e:
-        print(f"Error: {e}")
-        return jsonify({"exito": False, "error": str(e)})
-
-@app.route("/logout")
-def logout():
-    session.pop("usuario", None)
-    session.pop("nombre", None)
-    return redirect(url_for("index"))
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))

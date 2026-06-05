@@ -1,10 +1,10 @@
 P001,Zapatas de Freno,TOYOTA,Zapatas,80.0,10,zapata_toyota
-P002,Pastillas Ceramicas,TOYOTA,Pastillas,120.0,14,pastilla_toyota
+P002,Pastillas Ceramicas TOYOTA,TOYOTA,Pastillas,122.0,14,pastilla_toyota
 P003,Bomba de Freno,TOYOTA,Bombas,200.0,7,bomba_toyota
 P004,Master de Freno,TOYOTA,Master,450.0,5,master_toyota
 P005,Manguera de Freno,TOYOTA,Mangueras,50.0,20,manguera
 P006,Zapatas de Freno,HYUNDAI,Zapatas,85.0,12,zapata_hyundai
-P007,Pastillas Ceramicas,HYUNDAI,Pastillas,125.0,9,pastilla_hyundai
+P007,Pastillas Ceramicas,HYUNDAI,Pastillas,125.0,8,pastilla_hyundai
 P008,Bomba de Freno,HYUNDAI,Bombas,210.0,7,bomba_hyundai
 P009,Master de Freno,HYUNDAI,Master,460.0,4,master_hyundai
 P010,Jebe de Caliper,TOYOTA,Jebes,35.0,25,jebe
@@ -43,4 +43,5 @@ P010,Pastillas Deportivas NISSAN Sentra,NISSAN,Pastillas,135.0,10,pastilla_nissa
 P011,Zapatas Traseras NISSAN Tsuru,NISSAN,Zapatas,90.0,12,zapata_nissan
 P012,Bomba de Freno NISSAN Versa,NISSAN,Bombas,195.0,6,bomba_nissan
 P043,Master de Freno NISSAN Altima,NISSAN,Master,460.0,5,master_nissan
-L002,Líquido de Frenos DOT 5 Premium,UNIVERSAL,Liquido,45,40,liquido_dot5
+L002,Lquido de Frenos DOT 5 Premium,UNIVERSAL,Liquido,45.0,40,liquido_dot5
+R013,resorte de freno,UNIVERSAL,Otros,25.0,15,resorte_freno
