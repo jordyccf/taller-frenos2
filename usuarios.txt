@@ -1,0 +1,3 @@
+admin,admin123,Administrador,admin@taller.com,admin
+cliente,cliente456,Cliente Demo,cliente@demo.com,cliente
+jordan,puccabill123,jordan fabian cupe,jordycc2009@gmail.com,cliente
