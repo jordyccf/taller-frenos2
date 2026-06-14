@@ -34,7 +34,11 @@ def cargar_usuarios():
                         pwd = partes[1]
                         nombre = partes[2] if len(partes) > 2 else user
                         email = partes[3] if len(partes) > 3 else ""
+<<<<<<< HEAD
                         rol = partes[4] if len(partes) > 4 else "cliente"
+=======
+                        rol = partes[4] if len(partes) > 4 else "cliente"  # Por defecto cliente
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
                         usuarios[user] = pwd
                         usuarios_detalle[user] = {"nombre": nombre, "email": email, "rol": rol}
     except Exception as e:
@@ -67,6 +71,10 @@ def guardar_usuario(usuario, password, nombre, email, rol="cliente"):
 def cargar_productos():
     if not os.path.exists("productos.txt"):
         productos_iniciales = [
+<<<<<<< HEAD
+=======
+            # Productos con marca (para categorías normales)
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
             "P001,Zapatas de Freno Delanteras,TOYOTA,Zapatas,80,10,zapata_toyota",
             "P002,Pastillas Cerámicas Premium,TOYOTA,Pastillas,120,15,pastilla_toyota",
             "P003,Bomba de Freno,TOYOTA,Bombas,200,8,bomba_toyota",
@@ -79,6 +87,11 @@ def cargar_productos():
             "P010,Pastillas Deportivas,NISSAN,Pastillas,135,10,pastilla_nissan",
             "P011,Zapatas Traseras,NISSAN,Zapatas,90,12,zapata_nissan",
             "P012,Bomba de Freno,NISSAN,Bombas,195,6,bomba_nissan",
+<<<<<<< HEAD
+=======
+            
+            # Productos genéricos para "OTROS REPUESTOS" (sin marca específica)
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
             "R001,Manguera de Freno Genérica,UNIVERSAL,Manguera,45,25,manguera_generica",
             "R002,KIT de Empaques y Jebes,UNIVERSAL,Kit,55,20,kit_empaques",
             "R003,Pistón de Caliper,UNIVERSAL,Piston,65,15,piston_caliper",
@@ -91,6 +104,11 @@ def cargar_productos():
             "R010,Resorte de Zapatas,UNIVERSAL,Resorte,18,45,resorte_zapatas",
             "R011,Sensor de Desgaste de Pastillas,UNIVERSAL,Sensor,42,18,sensor_desgaste",
             "R012,Grasa para Frenos de Alta Temperatura,UNIVERSAL,Grasa,22,40,grasa_frenos",
+<<<<<<< HEAD
+=======
+            
+            # Líquido de frenos (va en su propia categoría, NO en Otros)
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
             "L001,Líquido de Frenos DOT 4,UNIVERSAL,Liquido,25,50,liquido_dot4",
         ]
         with open("productos.txt", "w", encoding='utf-8') as f:
@@ -154,6 +172,7 @@ def cargar_pedidos():
         pedidos = []
     return pedidos
 
+<<<<<<< HEAD
 def actualizar_estado_pedido(numero, nuevo_estado):
     pedidos = cargar_pedidos()
     for p in pedidos:
@@ -170,6 +189,8 @@ def actualizar_estado_pedido(numero, nuevo_estado):
     except:
         return False
 
+=======
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
 def es_admin():
     return session.get('rol') == 'admin'
 
@@ -188,6 +209,10 @@ def admin_crear_producto():
     stock = data.get('stock')
     nombre_base = data.get('nombre_base', '').strip()
     
+<<<<<<< HEAD
+=======
+    # Validaciones básicas
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
     if not codigo or not nombre or not tipo:
         return jsonify({"exito": False, "mensaje": "Campos obligatorios: código, nombre, tipo"})
     try:
@@ -196,15 +221,27 @@ def admin_crear_producto():
     except:
         return jsonify({"exito": False, "mensaje": "Precio/stock inválidos"})
     
+<<<<<<< HEAD
+=======
+    # Verificar código único
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
     productos = cargar_productos()
     if any(p['codigo'] == codigo for p in productos):
         return jsonify({"exito": False, "mensaje": "El código ya existe"})
     
+<<<<<<< HEAD
+=======
+    # Determinar imagen
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
     if not nombre_base:
         nombre_base = codigo.lower()
     imagen_real = obtener_imagen_existente(nombre_base)
     if not imagen_real:
+<<<<<<< HEAD
         imagen_real = f"{nombre_base}.jpg"
+=======
+        imagen_real = f"{nombre_base}.jpg"  # se usará el placeholder si no existe
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
     
     nuevo = {
         "codigo": codigo,
@@ -233,6 +270,10 @@ def admin_editar_producto(codigo):
     if idx is None:
         return jsonify({"exito": False, "mensaje": "Producto no encontrado"}), 404
     
+<<<<<<< HEAD
+=======
+    # Actualizar campos
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
     for campo in ['nombre', 'marca', 'tipo', 'precio', 'stock', 'nombre_base']:
         if campo in data:
             if campo in ('precio', 'stock'):
@@ -243,6 +284,10 @@ def admin_editar_producto(codigo):
             else:
                 productos[idx][campo] = data[campo]
     
+<<<<<<< HEAD
+=======
+    # Actualizar imagen si cambió nombre_base
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
     nombre_base = productos[idx]['nombre_base']
     imagen_real = obtener_imagen_existente(nombre_base)
     productos[idx]['imagen'] = imagen_real if imagen_real else f"{nombre_base}.jpg"
@@ -263,6 +308,7 @@ def admin_eliminar_producto(codigo):
     guardar_productos(productos)
     return jsonify({"exito": True})
 
+<<<<<<< HEAD
 # ==================== DASHBOARD DEL ADMIN ====================
 @app.route('/admin/dashboard')
 def admin_dashboard():
@@ -309,6 +355,8 @@ def admin_actualizar_estado(num):
 def quienes_somos():
     return render_template_string(quienes_somos_html, session=session)
 
+=======
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
 # ==================== RUTAS PÚBLICAS ====================
 @app.route('/imagenes/<path:filename>')
 def servir_imagen(filename):
@@ -389,6 +437,7 @@ def logout():
     session.pop("rol", None)
     return redirect(url_for("index"))
 
+<<<<<<< HEAD
 # ==================== HTML QUIÉNES SOMOS ====================
 quienes_somos_html = """
 <!DOCTYPE html>
@@ -735,6 +784,9 @@ dashboard_html = """
 """
 
 # ==================== HTML COMPLETO (con admin y link a Quiénes Somos) ====================
+=======
+# ==================== HTML COMPLETO (con admin) ====================
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
 landing_html = """
 <!DOCTYPE html>
 <html lang="es">
@@ -762,6 +814,7 @@ landing_html = """
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
+<<<<<<< HEAD
         .logo h1 { 
             font-size: 42px; 
             color: white;
@@ -774,6 +827,20 @@ landing_html = """
             font-size: 23px; 
             color: #ff6b6b;
         }
+=======
+     .logo h1 { 
+    font-size: 42px; 
+    color: white;
+}
+.logo h1 i {
+    color: #ff3333;
+    margin-right: 10px;
+}
+.logo p { 
+    font-size: 23px; 
+    color: #ff6b6b;
+}
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
         
         .cart-icon {
             background: #ff6b6b;
@@ -797,6 +864,7 @@ landing_html = """
         
         .btn-logout:hover { background: #c82333; color: white; }
         
+<<<<<<< HEAD
         .btn-quienes {
             background: #17a2b8;
             padding: 8px 15px;
@@ -808,6 +876,8 @@ landing_html = """
         
         .btn-quienes:hover { background: #138496; color: white; }
         
+=======
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
         .buscador-container {
             background: white;
             border-radius: 50px;
@@ -1121,9 +1191,12 @@ landing_html = """
                         <input type="text" id="buscadorInput" placeholder="Buscar producto..." onkeyup="buscarProducto(event)">
                         <button onclick="realizarBusqueda()"><i class="fas fa-search"></i></button>
                     </div>
+<<<<<<< HEAD
                     <a href="/quienes-somos" class="btn-quienes">
                         <i class="fas fa-info-circle"></i> ¿Quiénes somos?
                     </a>
+=======
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
                     <div class="cart-icon" onclick="abrirCarrito()">
                         <i class="fas fa-shopping-cart"></i> <span id="cartCount">0</span>
                     </div>
@@ -1136,9 +1209,12 @@ landing_html = """
                     <button class="btn btn-success" onclick="abrirModalAgregar()">
                         <i class="fas fa-plus-circle"></i> Agregar Producto
                     </button>
+<<<<<<< HEAD
                     <a href="/admin/dashboard" class="btn btn-info">
                         <i class="fas fa-chart-line"></i> Dashboard
                     </a>
+=======
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
                     {% endif %}
                     {% else %}
                     <button class="btn btn-outline-light" onclick="abrirModalRegistro()">
@@ -1233,6 +1309,7 @@ landing_html = """
                         <div class="sidebar-title mt-2">
                             <i class="fas fa-industry"></i> Filtrar por Marca
                         </div>
+<<<<<<< HEAD
                         <div id="marcasLista" class="d-flex flex-wrap">
                             <div class="marca-item" onclick="filtrarPorMarca('TOYOTA')">TOYOTA</div>
                             <div class="marca-item" onclick="filtrarPorMarca('HYUNDAI')">HYUNDAI</div>
@@ -1244,6 +1321,19 @@ landing_html = """
                             <div class="marca-item" onclick="filtrarPorMarca('UNIVERSAL')">UNIVERSAL</div>
                             <div class="marca-item" onclick="filtrarPorMarca('')">Todas</div>
                         </div>
+=======
+                       <div id="marcasLista" class="d-flex flex-wrap">
+    <div class="marca-item" onclick="filtrarPorMarca('TOYOTA')">TOYOTA</div>
+    <div class="marca-item" onclick="filtrarPorMarca('HYUNDAI')">HYUNDAI</div>
+    <div class="marca-item" onclick="filtrarPorMarca('NISSAN')">NISSAN</div>
+    <div class="marca-item" onclick="filtrarPorMarca('MAZDA')">MAZDA</div>
+    <div class="marca-item" onclick="filtrarPorMarca('CHEVROLET')">CHEVROLET</div>
+    <div class="marca-item" onclick="filtrarPorMarca('JEEP')">JEEP</div>
+    <div class="marca-item" onclick="filtrarPorMarca('MITSUBISHI')">MITSUBISHI</div>
+    <div class="marca-item" onclick="filtrarPorMarca('UNIVERSAL')">UNIVERSAL</div>
+    <div class="marca-item" onclick="filtrarPorMarca('')">Todas</div>
+</div>
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
                         <div id="mensajeGenerico" class="info-otros" style="display: none;">
                             <i class="fas fa-info-circle"></i> Los productos genéricos no tienen marca específica
                         </div>
@@ -1527,6 +1617,10 @@ landing_html = """
             let productosFiltrados = [];
             
             if (categoriaActual === 'Otros') {
+<<<<<<< HEAD
+=======
+                // SOLO productos UNIVERSAL que NO sean Liquido
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
                 productosFiltrados = productosData.filter(p => 
                     p.marca === 'UNIVERSAL' && 
                     p.tipo !== 'Liquido'
@@ -1881,6 +1975,10 @@ landing_html = """
             cerrarModalEliminar();
         });
 
+<<<<<<< HEAD
+=======
+        // Cerrar modales al hacer clic fuera
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
         window.addEventListener('click', function(e) {
             if (e.target === document.getElementById('modalProducto')) cerrarModalProducto();
             if (e.target === document.getElementById('modalEliminar')) cerrarModalEliminar();
@@ -1888,6 +1986,10 @@ landing_html = """
             if (e.target === document.getElementById('modalCarrito')) cerrarCarrito();
         });
         
+<<<<<<< HEAD
+=======
+        // Inicializar
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
         let saved = localStorage.getItem('carrito');
         if (saved) carrito = JSON.parse(saved);
         actualizarCarritoUI();
@@ -1900,5 +2002,9 @@ landing_html = """
     """
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     port = int(os.environ.get("PORT", 8000))
+=======
+    port = int(os.environ.get("PORT", 8080))
+>>>>>>> 53cff441a9e73117cee6103c15537e2d332d69ca
     app.run(host="0.0.0.0", port=port, debug=False)
